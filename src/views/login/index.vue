@@ -56,6 +56,7 @@
 </template>
 
 <script>
+import { loginApi } from '@/api/modules/user'
 import { userBaseUrl } from '@/config/env'
 import { isvalidUsername } from '@/utils/validate'
 // import LangSelect from '@/components/LangSelect'
@@ -67,7 +68,7 @@ export default {
   data() {
     return {
       smsSend: false,
-      smscodeImg: `${userBaseUrl}/user/imageVali/`,
+      smscodeImg: `${userBaseUrl}/admin/captcha`,
       loginForm: {
         username: '',
         smscode: '',
@@ -91,7 +92,7 @@ export default {
   methods: {
     // 获取验证码
     getSmsCode: function() {
-      this.smscodeImg = `${userBaseUrl}/user/imageVali/?time=${new Date().getTime()}`;
+      this.smscodeImg = `${userBaseUrl}/admin/captcha?time=${new Date().getTime()}`;
     },
     showPwd() {
       if (this.passwordType === 'password') {
@@ -102,30 +103,30 @@ export default {
     },
     handleLogin() {
       console.log(this.loginForm.username.trim(), this.loginForm.password.trim())
-      this.$auth('/user/auth', {
+      loginApi({
         username: this.loginForm.username.trim(),
         password: this.loginForm.password.trim(),
-        code: this.loginForm.smscode
+        capkey: this.loginForm.smscode
       })
       .then( res => {
-          if( res.code == '000000') {
-              this.$store.dispatch('StoreToken', res.data);
-              this.$get('/admin/user')
-              .then( response => {
-                  this.$store.commit('AM_STORE_USER_INFO', response.data);
-                  sessionStorage.setItem('userInfo', JSON.stringify(response.data) )
-                  this.$router.push({path: '/'});
-              })
-              .catch( error => {
-                  this.$notify.error({
-                    title: '错误',
-                    message: error
-                  });
-              })
+          if( res.code == '0') {
+              this.$store.dispatch('StoreToken', res.data.token);
+              // this.$get('/admin/user')
+              // .then( response => {
+              //     this.$store.commit('AM_STORE_USER_INFO', response.data);
+              //     sessionStorage.setItem('userInfo', JSON.stringify(response.data) )
+              //     this.$router.push({path: '/'});
+              // })
+              // .catch( error => {
+              //     this.$notify.error({
+              //       title: '错误',
+              //       message: error
+              //     });
+              // })
           }else {
             this.$notify.error({
               title: '错误',
-              message: res.msg
+              message: res.message
             });
           }
       })

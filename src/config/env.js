@@ -13,8 +13,8 @@ let baseImgPath;
 
 if (process.env.NODE_ENV == 'development') {
 	// baseUrl = 'http://118.190.152.1:8081'; /apis
-	baseUrl = '/apis';
-	userBaseUrl = 'http://118.190.152.1:8084';
+	baseUrl = 'http://127.0.0.1:3000';
+	userBaseUrl = 'http://127.0.0.1:3000';
     baseImgPath = '';
 }else{	
 	baseUrl = 'http://192.168.110.78:8800';

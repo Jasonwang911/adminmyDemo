@@ -17,6 +17,7 @@ import { baseUrl, userBaseUrl } from '@/config/env'
 const server = axios.create({
   baseURL: baseUrl,
   timeout: 10000,
+  withCredentials: true,
   // headers: {'Content-Type': 'Content-Type: application/json'}
   // headers: {
   //   Authorization:`Bearer ${$store.state.user.token}`
@@ -26,6 +27,7 @@ const server = axios.create({
 const userServer = axios.create({
   baseURL: userBaseUrl,
   timeout: 10000,
+  withCredentials: true,
   // headers: {'Content-Type': 'Content-Type: application/json'}
   // headers: {
   //   Authorization:`Bearer ${$store.state.user.token}`
@@ -128,6 +130,7 @@ export function auth(url, params = {}) {
     // post请求
     axios({
       method: 'post',
+      withCredentials: true,
       url: `${userBaseUrl}${url}`,
       data: params,
     })
