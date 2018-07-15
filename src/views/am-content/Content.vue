@@ -1,31 +1,75 @@
 <template>
   <div class="app-container calendar-list-container">
-    <!-- <div class="filter-container">
-      <el-button class="filter-item" style="margin-left: 10px;" @click="handleCreate" type="primary" icon="el-icon-edit">添加</el-button>
-    </div> -->
 
-    <el-table :key='tableKey' :data="this.backMsg"  border fit highlight-current-row
-      style="width: 100%">
-      <el-table-column align="center" label="id" width="65">
+
+    <div class="clearfix marginT">
+        <div class="clearfix fl marginL">
+            <div class="searchTitle fl">模糊搜索：</div>
+            <el-input class="fl search-input" v-model="viewOptions.comment" placeholder="请输入评论内容"></el-input>
+        </div>
+
+        <div class="clearfix fl marginL">
+            <div class="searchTitle fl">开始日期：</div>
+            <el-date-picker
+              class="search-input fl"
+              :span="14"
+              v-model="viewOptions.startTime"
+              value-format="yyyy-MM-dd HH:mm:ss"
+              type="date"
+              placeholder="选择日期">
+            </el-date-picker>
+        </div>
+
+        <div class="clearfix fl marginL">
+            <div class="searchTitle fl">结束日期：</div>
+            <el-date-picker
+              class="search-input fl"
+              :span="14"
+              v-model="viewOptions.endTime"
+              type="date"
+              value-format="yyyy-MM-dd HH:mm:ss"
+              placeholder="选择日期">
+            </el-date-picker>
+        </div>
+    </div>
+     <!-- 搜索和添加 -->
+    <el-row :gutter="10" style="width: 60%; margin: 20px 22px">
+      <el-col :span="5"><el-button type="primary" @click="searchList">搜索</el-button></el-col>
+      <el-col :span="5"><el-button type="danger" @click="deleteAll">批量删除</el-button></el-col>
+    </el-row>
+
+    <el-table ref="multipleTable" :key='tableKey' :data="this.backMsg"  border fit highlight-current-row
+      style="width: 100%" @selection-change="changeFun">
+      <el-table-column
+      type="selection"
+      @selection-change="changeFun"
+      width="55">
+    </el-table-column>
+      <el-table-column align="center" label="编号" width="65">
         <template slot-scope="scope">
-          <span>{{scope.row.id}}</span>
+          <span>{{scope.row.serialNumber}}</span>
         </template>
       </el-table-column>
-      <el-table-column align="center" label="二级标题名称" min-width="100">
+      <el-table-column align="center" label="评论内容" min-width="100">
         <template slot-scope="scope">
-          <span>{{scope.row.titleName}}</span>
+          <span>{{scope.row.comment}}</span>
+        </template>
+      </el-table-column>
+      <el-table-column class-name="status-col" label="创建时间" min-width="100">
+        <template slot-scope="scope">
+          <span>{{scope.row.createTime}}</span>
         </template>
       </el-table-column>
       <el-table-column align="center" label="操作" width="230" class-name="small-padding fixed-width">
         <template slot-scope="scope">
-          <el-button type="primary" size="mini" @click="handleUpdate(scope.row)">修改</el-button>
-          <!-- <el-button v-if="scope.row.status!='deleted'" size="mini" type="danger" @click="handleModifyStatus(scope.row,'deleted')">删除
-          </el-button> -->
+          <!-- <el-button type="primary" size="mini" @click="handleUpdate(scope.row)">修改</el-button> -->
+          <el-button v-if="scope.row.status!='deleted'" size="mini" type="danger" @click="handleModifyStatus(scope.row,'deleted')">删除
+          </el-button>
         </template>
       </el-table-column>
     </el-table>
 
-    <!-- <el-pagination
+     <el-pagination
       style="width: 400px;margin:30px auto;"
       @current-change="handleCurrentChange"
       :current-page.sync="viewOptions.pageNo"
@@ -34,7 +78,7 @@
       layout="total, prev, pager, next"
       :total="pageList.total"
       :page-count="pageList.pages">
-    </el-pagination> -->
+    </el-pagination>
 
     <el-dialog :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible">
       <el-form :rules="rules" ref="dataForm" :model="temp" label-position="left" label-width="90px" style='width: 400px; margin-left:50px;'>
@@ -42,8 +86,11 @@
           <span v-if="textMap[dialogStatus] == 'add' ">{{temp.serialNumber}}</span>
           <el-input v-else v-model="temp.serialNumber"></el-input>
         </el-form-item> -->
-        <el-form-item label="二级标题" prop="title">
-          <el-input v-model="temp.titleName"></el-input>
+        <el-form-item label="平台名称" prop="title">
+          <el-input v-model="temp.name"></el-input>
+        </el-form-item>
+        <el-form-item label="url链接" prop="title">
+          <el-input v-model="temp.url"></el-input>
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
@@ -110,13 +157,17 @@ export default {
   },
   data() {
     return {
+      multipleSelection: [],
+      deleteIDArr: [],
       pageList: {
 
       },
       viewOptions:  {
-        type: 0 ,  // 0:新媒体 1:首页头条配置 2: 首页广告 3:二维码 4:banner 5:专题策划一组 6:专题策划二组 7:专题策划广告 8:浮窗配置
-        pageNo: 1,  // 页数 
-        pageSize: 10   // 请求多少条
+        "comment": "",
+        "endTime": "",
+        "pageNo": 1,
+        "pageSize": 10,
+        "startTime": "",
       },
 
       backMsg: [],
@@ -181,13 +232,59 @@ export default {
   },
   created() {
       // 浮窗配置  /file/upload/image
-     this.$post(`/admin/titleList/twoTitleList`, {id:101})
+     this.$post(`/admin/commentSearch`, this.viewOptions)
     .then( res => {
-        // this.pageList = res.data;
-        this.backMsg = res.data;
+        this.pageList = res.data;
+        this.backMsg = res.data.list;
     })
   },
   methods: {
+    // 批量删除
+    deleteAll() {
+        console.log(this.multipleSelection)
+        for(var name of this.multipleSelection) {
+            console.log('aaaa==>' , name)
+            this.deleteIDArr.push(name.id);
+        }
+        console.log(this.deleteIDArr)
+        let idsStr = this.deleteIDArr.join('$');
+        idsStr = `${idsStr}$`
+        console.log(`${idsStr}$`)
+
+
+        this.$confirm('此操作将永久删除该评论, 是否继续?', '提示', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning'
+        }).then(() => {
+            this.$post('/admin/commentDelete', {
+                idsStr
+              })
+              .then(res => {
+                
+                 this.$post(`/admin/commentSearch`, this.viewOptions)
+                .then( res => {
+                    this.pageList = res.data;
+                    this.backMsg = res.data.list;
+                })
+                this.$message({
+                  message: '操作成功',
+                  type: 'success'
+                })
+              })
+              .catch( err => {
+                this.$message({
+                  message: err,
+                  type: '操作失败'
+                })
+              })
+        }).catch(() => {
+          this.$message({
+            type: 'info',
+            message: '已取消删除'
+          });          
+        });
+    },
     handleCurrentChange(val) {
       this.viewOptions.pageNo = val;
       this.$post(`/admin/titleLink/search`, this.viewOptions)
@@ -213,21 +310,16 @@ export default {
     },
     handleModifyStatus(row, status) {
 
-      this.$confirm('此操作将永久删除该文件, 是否继续?', '提示', {
+      this.$confirm('此操作将永久删除该评论, 是否继续?', '提示', {
           confirmButtonText: '确定',
           cancelButtonText: '取消',
           type: 'warning'
         }).then(() => {
-            this.$post('/admin/body/articleStatChenge', {
-                "articleOrTitleLink": 1,
-                "id": row.id,
-                "status": 2
+            this.$post('/admin/commentDelete', {
+                "idsStr": `${row.id}$`
               })
               .then(res => {
-                this.backMsg = this.backMsg.filter(function(v){
-                  return row.id !== v.id;
-                });
-                this.$post(`/admin/titleLink/search`, this.viewOptions)
+                this.$post(`/admin/commentSearch`, this.viewOptions)
                 .then( res => {
                     this.pageList = res.data;
                     this.backMsg = res.data.list;
@@ -305,7 +397,7 @@ export default {
       this.$post('/admin/titleLink/publish',{
           "id": 0,
           "name": this.temp.name,
-          "type": 0,
+          "type": 3,
           "url": this.temp.url
       })
       .then( res => {
@@ -348,25 +440,29 @@ export default {
           const tempData = Object.assign({}, this.temp)
           tempData.timestamp = +new Date(tempData.timestamp) // change Thu Nov 30 2017 16:41:05 GMT+0800 (CST) to 1512031311464
           console.log(tempData)
-          this.$post('/admin/titleList/customTwoTitleList', {
+          this.$post('/admin/titleLink/publish', {
               "id": tempData.id,
-              "name": tempData.titleName,
+              "name": tempData.name,
+              "type": 3,
+              "url": tempData.url
           })
           .then(res => {
-            //   for (const v of this.backMsg) {
-            //     if (v.id === this.temp.id) {
-            //       const index = this.backMsg.indexOf(v)
-            //       this.backMsg.splice(index, 1, this.temp)
-            //       break
-            //     }
-            //   }
+              for (const v of this.backMsg) {
+                if (v.id === this.temp.id) {
+                  const index = this.backMsg.indexOf(v)
+                  this.backMsg.splice(index, 1, this.temp)
+                  break
+                }
+              }
               this.dialogFormVisible = false;
 
-            this.$post(`/admin/titleList/twoTitleList`, {id:101})
-            .then( response => {
-                // this.pageList = res.data;
-                this.backMsg = response.data;
-            })
+
+              this.$post(`/admin/titleLink/search`, this.viewOptions)
+              .then( res => {
+                  this.pageList = res.data;
+                  this.backMsg = res.data.list;
+              })
+
 
               this.$notify({
                 title: '成功',
@@ -375,10 +471,10 @@ export default {
                 duration: 2000
               })
           })
-          .catch( error => {
+          .catch( err => {
               this.$notify({
                 title: '失败',
-                message: error,
+                message: err,
                 type: 'success',
                 duration: 2000
               })
@@ -440,7 +536,47 @@ export default {
           return v[j]
         }
       }))
-    }
+    },
+    searchList() {
+        this.$post(`/admin/commentSearch`, this.viewOptions)
+        .then( res => {
+            this.pageList = res.data;
+            this.backMsg = res.data.list;
+        })
+      .catch( err => {
+          this.$message({
+            message: err,
+            type: '操作失败'
+          })
+      })
+    },
+    changeFun(val) {
+    this.multipleSelection = val;
+    console.log(this.multipleSelection)
+    },
   }
 }
 </script>
+
+
+<style lang="scss" scoped>
+
+  .searchTitle{
+    border: 1px solid #ccc;
+    line-height: 34px;
+    padding: 0 10px;
+  }
+  .marginL{
+    margin-left: 30px;
+  }
+  .searchTitle{
+    width: 105px;
+  }
+  .search-input{
+    width: 196px;
+  }
+  .marginT{
+    margin: 15px 0;
+  }
+
+</style>

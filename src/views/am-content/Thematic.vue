@@ -48,6 +48,11 @@
           </el-row>
 
           <el-row style="marginTop:10px;">
+              <el-col :span="4"><div class="searchTitle">来源：</div></el-col>
+              <el-col :span="12"><el-input class="" v-model="changeOptions.articleSource" placeholder="请输入内容"></el-input></el-col>
+          </el-row>
+
+          <el-row style="marginTop:10px;">
               <el-col :span="4"><div class="searchTitle">缩略图：</div></el-col>
               <el-col :span="12"><el-input :disabled="true" class="" v-model="changeOptions.thumbnailLink" placeholder="请输入内容"></el-input></el-col>
               <el-col :span="2"><el-button type="warning" @click="SearchMedia('smallImg')">查询</el-button></el-col>
@@ -60,7 +65,7 @@
           </el-row>
 
           <el-row style="marginTop:10px;">
-              <el-col :span="4"><div class="searchTitle">主视图：</div></el-col>
+              <el-col :span="4"><div class="searchTitle">视频缩略图</div></el-col>
               <el-col :span="12"><el-input :disabled="true" class="" v-model="changeOptions.frontViewLink" placeholder="请输入内容"></el-input></el-col>
               <el-col :span="2"><el-button type="warning" @click="SearchMedia('mainImg')">查询</el-button></el-col>
           </el-row>
@@ -71,7 +76,24 @@
               <el-col :span="2"><el-button type="warning" @click="SearchMedia('video')">查询</el-button></el-col>
           </el-row>
 
-        <div style="margin: 30px auto;width:770px">
+          <el-row style="marginTop:10px;">
+              <el-col :span="4"><div class="searchTitle">视频描述：</div></el-col>
+              <el-col :span="12"><el-input class="" v-model="changeOptions.videoPresentation" placeholder="请输入内容"></el-input></el-col>
+          </el-row>
+
+        <div class="clearfix fl" style="marginTop:10px;width:350px;">
+            <el-col :span="8" style="margin-right:11px;"><div class="searchTitle fl">发布时间：</div></el-col>
+            <el-date-picker
+              class="fl search-input"
+              :span="14"
+              v-model="changeOptions.createTime"
+              type="date"
+              value-format="yyyy-MM-dd HH:mm:ss"
+              placeholder="选择日期">
+            </el-date-picker>
+        </div>
+
+        <div style="margin: 60px auto; width: 770px">
           <UEditor style="marginTop:10px;" :config=config ref="ueditor"></UEditor>
         </div>
         <div slot="footer" class="dialog-footer" style="marginLeft: 45%; marginTop: 30px;marginBottom: 30px;">
@@ -325,6 +347,11 @@
               <span>{{scope.row.author}}</span>
             </template>
           </el-table-column>
+          <el-table-column width="150px" align="center" label="发布日期">
+            <template slot-scope="scope">
+              <span>{{scope.row.createTime}}</span>
+            </template>
+          </el-table-column>
           <el-table-column width="150px" align="center" label="更新日期">
             <template slot-scope="scope">
               <span>{{scope.row.updateTime}}</span>
@@ -412,7 +439,9 @@
             "pageSize": 10,
             "startTime": "",
             "status": 1,
-            "twoId": ""
+            "twoId": "",
+            "createTime": "",
+            "articleSource": ''
           },
           searchOptions: {
             "author": "",
@@ -452,7 +481,9 @@
             "summary": "",
             "thumbnailLink": "",
             "twoId": 0,
-            "videoLink": ""
+            "videoLink": "",
+            "createTime": "",
+            "articleSource": ''
           },
           oneIdOptions: [
 
@@ -550,8 +581,8 @@
                 '|',
 
                 'justifyleft', //居左对齐
-                'justifyright', //居右对齐
                 'justifycenter', //居中对齐
+                'justifyright', //居右对齐
                 'justifyjustify', //两端对齐
                 '|',
 
@@ -708,6 +739,14 @@
 
       },
       methods: {
+        //时间戳转yy-mm-dd
+        fmtDate(obj){
+            var date =  new Date(obj);
+            var y = 1900+date.getYear();
+            var m = "0"+(date.getMonth()+1);
+            var d = "0"+date.getDate();
+            return y+"-"+m.substring(m.length-2,m.length)+"-"+d.substring(d.length-2,d.length);
+        },
         handleCurrentChange(val) {
           this.viewOptions.pageNo = val;
           this.changeViewTab()
@@ -963,6 +1002,7 @@
                 articleInfo = res.data;
 
                 this.$refs.ueditor.setContent(articleInfo.body);
+                let createTime = this.fmtDate(articleInfo.createTime);
 
                 this.changeOptions = {
                   "author": articleInfo.author,
@@ -976,7 +1016,11 @@
                   "summary": articleInfo.summary,
                   "thumbnailLink": articleInfo.thumbnailUrl,
                   "twoId": articleInfo.twoTitleId,
-                  "videoLink": articleInfo.videoUrl
+                  "videoLink": articleInfo.videoUrl,
+                  "createTime" : createTime,
+                  "videoPresentation" : articleInfo.videoPresentation,
+                  "articleSource": articleInfo.articleSource,
+                  "createTime": articleInfo.createTime
                 }
 
               // 清空编辑器所有内容     this.$refs.ueditor.execCommand('cleardoc');
@@ -1051,7 +1095,11 @@
                 "summary": "",
                 "thumbnailLink": "",
                 "twoId": this.twoFilterJson.id,
-                "videoLink": ""
+                "videoLink": "",
+                "createTime" : '',
+                "videoPresentation" : '',
+                "articleSource": '',
+                "createTime": ''
               }
 
             // 清空文章内容
@@ -1069,6 +1117,11 @@
               cancelButtonText: '取消',
               type: 'warning'
             }).then(() => {
+              if(data.status == 1){
+                data.status = 0;
+              }else {
+                data.status = 1;
+              }
               console.log(data)
                 this.$post('/admin/body/articleStatChenge',{
                     "articleOrTitleLink": 0,
@@ -1076,11 +1129,8 @@
                     "status": data.status
                 })
                 .then( res => {
-                    if(data.status == 1){
-                      data.status = 0;
-                    }else {
-                      data.status = 1;
-                    }
+
+                    this.changeViewTab()
 
                     this.$message({
                       type: 'success',

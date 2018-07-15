@@ -21,8 +21,8 @@ export default {
     return {
       tabMapOptions: [
         { label: '首页头条配置', key: 'CN', type: 1 , NO2Title: '平台名称', isAdv: false},
-        // { label: '专题策划一组', key: 'US', type: 5 , NO2Title: '平台名称', isAdv: false},
-        // { label: '专题策划二组', key: 'JP', type: 6 }
+        { label: '专题策划一组', key: 'US', type: 5 , NO2Title: '平台名称', isAdv: false},
+        { label: '专题策划二组', key: 'JP', type: 6 }
       ],
       activeName: 'CN',
       createdTimes: 0

@@ -44,6 +44,8 @@ import Thematic from '@/views/am-content/Thematic'
 import ThematicTwo from '@/views/am-content/ThematicTwo'
 /* 手艺专题策划 */ 
 import ThematicTwoName from '@/views/am-content/ThematicTwoName'
+/* 手艺专题策划 */ 
+import Content from '@/views/am-content/Content'
 /* 手艺网广告 */ 
 import Advertisement from '@/views/am-content/Advertisement'
 /* 手艺网官方信息 */ 
@@ -123,6 +125,21 @@ export const constantRouterMap = [
       }
     ]
   }, 
+  // 评论管理模块 Content
+  {
+    path: '/userContent',
+    component: Layout,
+    redirect: '/userContent/index',
+    children: [{
+      path: 'index',
+      component: Content,
+      name: 'Content',
+      meta: {
+        title: '评论管理',
+        icon: 'excel'
+      }
+    }]
+  },
   // 图片管理模块 MediaLayout
   {
     path: '/mediaModule',

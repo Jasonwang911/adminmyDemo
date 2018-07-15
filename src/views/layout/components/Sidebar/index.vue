@@ -36,7 +36,7 @@
             <el-menu-item index="/banner/index">banner</el-menu-item>
             <el-menu-item index="/QRcode/index">二维码</el-menu-item>
             <el-menu-item index="/newMedia/index">新媒体</el-menu-item>
-            <el-menu-item index="/thematicTwoName/index">自定义专题策划</el-menu-item>
+            <el-menu-item index="/thematicTwoName/index">自定义特别策划</el-menu-item>
           </el-menu-item-group>
         </el-submenu>
         <!-- 内容管理 -->
@@ -47,9 +47,10 @@
           </template>
           <el-menu-item-group>
             <el-menu-item index="/addver/index">文章管理</el-menu-item>
+            <el-menu-item index="/userContent/index">评论管理</el-menu-item>
             <el-menu-item index="/headline/index">头条</el-menu-item>
             <el-menu-item index="/thematic/index">特别策划</el-menu-item>
-            <el-menu-item index="/thematicTwo/index">自定义专题策划</el-menu-item>
+            <el-menu-item index="/thematicTwo/index">专题策划</el-menu-item>
             <el-menu-item index="/advertisement/index">广告</el-menu-item>
             <el-menu-item index="/information/index">官方信息</el-menu-item>
           </el-menu-item-group>

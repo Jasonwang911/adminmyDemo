@@ -48,6 +48,11 @@
           </el-row>
 
           <el-row style="marginTop:10px;">
+              <el-col :span="4"><div class="searchTitle">来源：</div></el-col>
+              <el-col :span="12"><el-input class="" v-model="changeOptions.articleSource" placeholder="请输入内容"></el-input></el-col>
+          </el-row>
+
+          <el-row style="marginTop:10px;">
               <el-col :span="4"><div class="searchTitle">缩略图：</div></el-col>
               <el-col :span="12"><el-input :disabled="true" class="" v-model="changeOptions.thumbnailLink" placeholder="请输入内容"></el-input></el-col>
               <el-col :span="2"><el-button type="warning" @click="SearchMedia('smallImg')">查询</el-button></el-col>
@@ -60,7 +65,7 @@
           </el-row>
 
           <el-row style="marginTop:10px;">
-              <el-col :span="4"><div class="searchTitle">主视图：</div></el-col>
+              <el-col :span="4"><div class="searchTitle">视频缩略图</div></el-col>
               <el-col :span="12"><el-input :disabled="true" class="" v-model="changeOptions.frontViewLink" placeholder="请输入内容"></el-input></el-col>
               <el-col :span="2"><el-button type="warning" @click="SearchMedia('mainImg')">查询</el-button></el-col>
           </el-row>
@@ -71,7 +76,24 @@
               <el-col :span="2"><el-button type="warning" @click="SearchMedia('video')">查询</el-button></el-col>
           </el-row>
 
-        <div style="margin: 30px auto;width:770px">
+          <el-row style="marginTop:10px;">
+              <el-col :span="4"><div class="searchTitle">视频描述：</div></el-col>
+              <el-col :span="12"><el-input class="" v-model="changeOptions.videoPresentation" placeholder="请输入内容"></el-input></el-col>
+          </el-row>
+          
+          <div class="clearfix fl" style="marginTop:10px;width:350px;">
+            <el-col :span="8" style="margin-right:11px;"><div class="searchTitle fl">发布时间：</div></el-col>
+            <el-date-picker
+              class="fl search-input"
+              :span="14"
+              v-model="changeOptions.createTime"
+              type="date"
+              value-format="yyyy-MM-dd HH:mm:ss"
+              placeholder="选择日期">
+            </el-date-picker>
+        </div>
+
+        <div style="margin: 60px auto; width: 770px">
           <UEditor style="marginTop:10px;" :config=config ref="ueditor"></UEditor>
         </div>
         <div slot="footer" class="dialog-footer" style="marginLeft: 45%; marginTop: 30px;marginBottom: 30px;">
@@ -411,24 +433,26 @@
             "bodyTitle": "",
             "endTime": "",
             "keywords": "",
-            "oneId": 0,
+            "oneId": 102,
             "pageNo": 1,
             "pageSize": 10,
             "startTime": "",
             "status": 1,
-            "twoId": 16
+            "twoId": 16,
+            "createTime": "",
+            "articleSource": ''            
           },
           searchOptions: {
             "author": "",
             "bodyTitle": "",
             "endTime": "",
             "keywords": "",
-            "oneId": "",
+            "oneId": 102,
             "pageNo": 1,
             "pageSize": 10,
             "startTime": "",
             "status": 1,
-            "twoId": ""
+            "twoId": 16
           },
           opacityStyle: '100%',
           changeMode: 'add',
@@ -456,7 +480,9 @@
             "summary": "",
             "thumbnailLink": "",
             "twoId": 0,
-            "videoLink": ""
+            "videoLink": "",
+            "createTime": "",
+            "articleSource": ''
           },
           oneIdOptions: [
 
@@ -554,8 +580,8 @@
                 '|',
 
                 'justifyleft', //居左对齐
-                'justifyright', //居右对齐
                 'justifycenter', //居中对齐
+                'justifyright', //居右对齐
                 'justifyjustify', //两端对齐
                 '|',
 
@@ -802,7 +828,7 @@
         },
         // 搜索文章
         hangleSearch: function() {
-            this.searchOptions.oneId = 0;
+            this.searchOptions.oneId = 102;
             this.searchOptions.twoId = 16;
             if(this.stausValue == '上架') {
                 this.searchOptions.status = 1;
@@ -976,11 +1002,14 @@
                   "keyword": articleInfo.keywords,
                   "listViewLink": articleInfo.listViewUrl,
                   "mainBody": articleInfo.body,
-                  "oneId": 0,
+                  "oneId": 102,
                   "summary": articleInfo.summary,
                   "thumbnailLink": articleInfo.thumbnailUrl,
                   "twoId": 16,
-                  "videoLink": articleInfo.videoUrl
+                  "videoLink": articleInfo.videoUrl,
+                  "videoPresentation" : articleInfo.videoPresentation,
+                  "articleSource": articleInfo.articleSource,
+                  "createTime": articleInfo.createTime
                 }
 
               // 清空编辑器所有内容     this.$refs.ueditor.execCommand('cleardoc');
@@ -1051,11 +1080,14 @@
                 "keyword": "",
                 "listViewLink": "",
                 "mainBody": "",
-                "oneId": 0,
+                "oneId": 102,
                 "summary": "",
                 "thumbnailLink": "",
-                "twoId": t16,
-                "videoLink": ""
+                "twoId": 16,
+                "videoLink": "",
+                "videoPresentation" : '',
+                "articleSource": '',
+                "createTime": ''
               }
 
             // 清空文章内容
@@ -1074,18 +1106,20 @@
               type: 'warning'
             }).then(() => {
               console.log(data)
+              if(data.status == 1){
+                data.status = 0;
+              }else {
+                data.status = 1;
+              }
                 this.$post('/admin/body/articleStatChenge',{
                     "articleOrTitleLink": 0,
                     "id": data.titleId,
                     "status": data.status
                 })
                 .then( res => {
-                    if(data.status == 1){
-                      data.status = 0;
-                    }else {
-                      data.status = 1;
-                    }
-
+                    
+                    this.changeViewTab()
+                    
                     this.$message({
                       type: 'success',
                       message: '状态更新成功!'
@@ -1207,7 +1241,7 @@
               if(res.code == '000000') {
                   let addOptions = {
                     "serialNumber": 1,
-                    "oneId": 0,
+                    "oneId": 102,
                     "twoId": 16,
                     "titleId": 67,
                     "bodyTitle": "千年腔调 穿越古今 ——走近中国戏剧活化石德江傩戏",

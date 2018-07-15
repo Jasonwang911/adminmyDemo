@@ -20,7 +20,7 @@ export default {
     return {
       tabMapOptions: [
         { label: '广告首页', key: 'CN', type: 2 , NO2Title: '图片', showLocation: true , isAdv: true},
-        { label: '专题策划广告', key: 'US', type: 7 , NO2Title: '图片', isAdv: true}
+        // { label: '专题策划广告', key: 'US', type: 7 , NO2Title: '图片', isAdv: true}
       ],
       activeName: 'CN',
       createdTimes: 0

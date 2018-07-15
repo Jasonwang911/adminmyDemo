@@ -1,14 +1,8 @@
 <template>
   <div class="app-container">
 
-    <!-- <el-tag style="margin-bottom:20px;">
-      <a href="https://github.com/PanJiaChen/vue-element-admin/tree/master/src/components/TreeTable" target="_blank">Documentation</a>
-    </el-tag> -->
-
-    <!-- <tree-table :data="data" :columns="columns" border></tree-table> -->
     <img src="~@/assets/tree.png" alt="">
     
-
   </div>
 </template>
 

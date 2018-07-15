@@ -17,8 +17,10 @@ if (process.env.NODE_ENV == 'development') {
 	userBaseUrl = 'http://118.190.152.1:8084';
     baseImgPath = '';
 }else{	
-	baseUrl = 'http://192.168.110.78:8800';
-	userBaseUrl = 'http://192.168.110.78:8800';
+	// baseUrl = 'http://192.168.110.78:8800';
+	// userBaseUrl = 'http://192.168.110.78:8800';
+	baseUrl = 'http://118.190.152.1:8800';
+	userBaseUrl = 'http://118.190.152.1:8084';
     baseImgPath = '';
 }
 
